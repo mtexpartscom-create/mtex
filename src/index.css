@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-black text-white font-sans antialiased;
+  }
+  h1, h2, h3, .font-heading {
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer components {
+  .btn-red {
+    @apply inline-flex items-center justify-center gap-2 bg-mtex-red text-white font-semibold px-6 py-3 rounded-md transition-all hover:brightness-110 hover:scale-[1.02] active:scale-95 min-h-[48px];
+  }
+  .btn-outline-blue {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-white border-2 border-mtex-lightblue px-6 py-3 rounded-md transition-all hover:bg-mtex-lightblue/10 hover:scale-[1.02] active:scale-95 min-h-[48px];
+  }
+  .btn-green {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-white border-2 border-emerald-500 px-4 py-2 rounded-md transition-all hover:bg-emerald-500/10 min-h-[48px];
+  }
+  .card-dark {
+    @apply bg-zinc-950 border border-mtex-darkblue/40 rounded-xl overflow-hidden transition-all hover:border-mtex-lightblue/60 hover:shadow-[0_0_24px_rgba(51,204,255,0.15)];
+  }
+  .input-dark {
+    @apply w-full bg-zinc-900 border border-zinc-700 rounded-md px-4 py-3 text-white placeholder-zinc-500 focus:border-mtex-lightblue focus:outline-none focus:ring-1 focus:ring-mtex-lightblue min-h-[48px];
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold uppercase mb-2;
+  }
+  .section-sub {
+    @apply text-mtex-lightblue font-medium mb-10;
+  }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #003399; }
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+  70% { box-shadow: 0 0 0 18px rgba(255, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+.pulse-ring { animation: pulse-ring 1.8s infinite; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.6s ease-out both; }
+
+.text-balance { text-wrap: balance; }
