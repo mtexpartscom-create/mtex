@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu, X, Phone, User, ShoppingCart, Wrench } from 'lucide-react';
 import { NAV_LINKS } from '@/lib/strings';
 import { COMPANY_PHONE } from '@/lib/pricing';
