@@ -1,10 +1,21 @@
 export const NAV_LINKS = [
-  { label: 'Начало', href: '#home' },
-  { label: 'За нас', href: '#about' },
-  { label: 'Автосервиз', href: '#service' },
-  { label: 'Автоморга', href: '#dismantling' },
-  { label: 'Автомобили на части', href: '#parts' },
-  { label: 'Контакти', href: '#contacts' },
+  { label: 'Начало', href: '/' },
+  { label: 'Автоморга', href: '/avtomorga' },
+  { label: 'Авточасти', href: '/avto-chasti' },
+  { label: 'Автосервиз', href: '/avtoservis' },
+  { label: 'Автоклиматици', href: '/avtoklimatici' },
+  { label: 'Продай колата', href: '/prodai-avtomobil' },
+  { label: 'Пътна помощ', href: '/patna-pomosht' },
+  { label: 'Контакти', href: '/#contacts' },
+] as const;
+
+export const SERVICE_CARDS = [
+  { icon: 'Car', title: 'АВТОМОРГА', description: 'Разгледайте нашите автомобили на части. Намираме точната част, която търсите от нашите активно разкомплектувани превозни средства.', button: 'Разгледай автомобилите на части', route: '/avtomorga' },
+  { icon: 'ShoppingCart', title: 'АВТОЧАСТИ', description: 'Онлайн магазин за качествени авточасти — оригинални и универсални. Търсете по категория и поръчвайте лесно онлайн.', button: 'Онлайн магазин', route: '/avto-chasti' },
+  { icon: 'Wrench', title: 'АВТОСЕРВИЗ', description: 'Професионално обслужване от сертифицирани механици. Запазете час онлайн за диагностика и ремонт на вашия автомобил.', button: 'Запази час', route: '/avtoservis' },
+  { icon: 'Snowflake', title: 'АВТОКЛИМАТИЦИ', description: 'Зареждане с фреон, диагностика за течове и ремонт на климатични системи. Запазете час за обслужване на климатика си.', button: 'Запази час', route: '/avtoklimatici' },
+  { icon: 'HandCoins', title: 'ПРОДАЙ АВТОМОБИЛА СИ', description: 'Имате автомобил, който искате да продадете? Изпратете ни снимки и информация, и ще получите бърза оферта за изкупуване.', button: 'Получи оферта', route: '/prodai-avtomobil' },
+  { icon: 'PhoneCall', title: 'ПЪТНА ПОМОЩ', description: 'Денонощна пътна помощ — репатриране, подаване на ток, смяна на гуми. Покриваме цяла България, 24 часа в денонощието.', button: 'SOS', route: '/patna-pomosht' },
 ] as const;
 
 export const TRUST_ITEMS = [
