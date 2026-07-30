@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import { AuthProvider, useAuth } from '@/lib/auth';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from '@/lib/auth';
 import { CartProvider } from '@/lib/cart';
 import { Header } from '@/components/Header';
-import { Hero } from '@/components/Hero';
-import { TrustBar } from '@/components/TrustBar';
-import { About } from '@/components/About';
-import { DismantlingCatalog } from '@/components/DismantlingCatalog';
-import { PartsShop } from '@/components/PartsShop';
-import { CarService } from '@/components/CarService';
-import { ACService } from '@/components/ACService';
-import { BuybackForm } from '@/components/BuybackForm';
-import { RoadAssistance } from '@/components/RoadAssistance';
-import { InquiryForm } from '@/components/InquiryForm';
-import { Contacts, Footer } from '@/components/Contacts';
+import { Footer } from '@/components/Contacts';
 import { AuthModal } from '@/components/AuthModal';
 import { CartDrawer } from '@/components/CartDrawer';
 import { AdminPanel } from '@/components/AdminPanel';
+import { LandingPage } from '@/pages/LandingPage';
+import { AvtomorgaPage } from '@/pages/AvtomorgaPage';
+import { AvtoChastiPage } from '@/pages/AvtoChastiPage';
+import { AvtoservisPage } from '@/pages/AvtoservisPage';
+import { AvtoklimaticiPage } from '@/pages/AvtoklimaticiPage';
+import { ProdaiAvtomobilPage } from '@/pages/ProdaiAvtomobilPage';
+import { PatnaPomoshtPage } from '@/pages/PatnaPomoshtPage';
+import { AdminPage } from '@/pages/AdminPage';
+import { useState } from 'react';
+import { useAuth } from '@/lib/auth';
 
 function AppInner() {
   const [authOpen, setAuthOpen] = useState(false);
@@ -24,25 +24,24 @@ function AppInner() {
   const { profile } = useAuth();
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black flex flex-col">
       <Header
         onCartClick={() => setCartOpen(true)}
         onAuthClick={() => setAuthOpen(true)}
         onAdminClick={() => setAdminOpen(true)}
       />
 
-      <main>
-        <Hero />
-        <TrustBar />
-        <About />
-        <DismantlingCatalog />
-        <PartsShop onCartClick={() => setCartOpen(true)} />
-        <CarService />
-        <ACService />
-        <BuybackForm />
-        <RoadAssistance />
-        <InquiryForm />
-        <Contacts />
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/avtomorga" element={<AvtomorgaPage />} />
+          <Route path="/avto-chasti" element={<AvtoChastiPage />} />
+          <Route path="/avtoservis" element={<AvtoservisPage />} />
+          <Route path="/avtoklimatici" element={<AvtoklimaticiPage />} />
+          <Route path="/prodai-avtomobil" element={<ProdaiAvtomobilPage />} />
+          <Route path="/patna-pomosht" element={<PatnaPomoshtPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
       </main>
 
       <Footer />
@@ -66,7 +65,9 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <AppInner />
+        <BrowserRouter>
+          <AppInner />
+        </BrowserRouter>
       </CartProvider>
     </AuthProvider>
   );
