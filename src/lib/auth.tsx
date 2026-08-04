@@ -39,19 +39,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loadProfile(data.session).finally(() => setLoading(false));
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
-      (async () => {
-        await loadProfile(s);
-      })();
+      if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        return;
+      }
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setTimeout(() => { loadProfile(s); }, 0);
+      }
     });
 
     return () => sub.subscription.unsubscribe();
   }, []);
 
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    if (data.session) {
+      setSession(data.session);
+      await loadProfile(data.session);
+    }
+    return { error: null };
   }
 
   async function signUp(email: string, password: string, meta: Record<string, string>) {

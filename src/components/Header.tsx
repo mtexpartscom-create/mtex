@@ -1,92 +1,150 @@
-import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Phone, User, ShoppingCart, Wrench } from 'lucide-react';
-import { NAV_LINKS } from '@/lib/strings';
-import { COMPANY_PHONE } from '@/lib/pricing';
-import { useCart } from '@/lib/cart';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, X, ShoppingCart, User, Phone } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { COMPANY_PHONE } from '@/lib/pricing';
 
 interface HeaderProps {
   onCartClick: () => void;
   onAuthClick: () => void;
   onAdminClick: () => void;
+  onLogout: () => void;
 }
 
-export function Header({ onCartClick, onAuthClick, onAdminClick }: HeaderProps) {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const { count } = useCart();
+export function Header({ onCartClick, onAuthClick, onAdminClick, onLogout }: HeaderProps) {
   const { profile } = useAuth();
-  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
+  const navLinks = [
+    { to: '/avtochasti', label: 'Авточасти' },
+    { to: '/avtomorga', label: 'Автоморга' },
+    { to: '/avtoservis', label: 'Автосервиз' },
+    { to: '/avtoklimatici', label: 'Автоклиматици' },
+    { to: '/prodai-avtomobil', label: 'Продай автомобил' },
+    { to: '/patna-pomosht', label: 'Пътна помощ' },
+  ];
 
   return (
-    <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-black/95 backdrop-blur border-b border-zinc-800' : 'bg-black/80 backdrop-blur'
-      }`}
-    >
+    <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-lg bg-mtex-red flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Wrench className="w-6 h-6 text-white" strokeWidth={2.5} />
-            </div>
-            <span className="font-heading text-xl md:text-2xl font-bold tracking-wider text-white">
-              MTEX <span className="text-mtex-red">Parts</span>
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <span className="font-heading text-xl md:text-2xl font-bold text-white tracking-tight">
+              M<span className="text-mtex-red">TEX</span>
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1">
-            {NAV_LINKS.map((l) => (
-              <Link key={l.href} to={l.href} className="px-3 py-2 text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-md transition-colors">
-                {l.label}
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-6">
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-sm font-medium text-zinc-300 hover:text-mtex-lightblue transition-colors"
+              >
+                {link.label}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2 md:gap-3">
-            <a href={`tel:${COMPANY_PHONE.replace(/\s/g, '')}`} className="hidden md:flex items-center gap-2 text-sm font-semibold text-white hover:text-mtex-lightblue transition-colors">
-              <Phone className="w-4 h-4 text-mtex-red" />
+          {/* Right side */}
+          <div className="flex items-center gap-2">
+            <a
+              href={`tel:${COMPANY_PHONE.replace(/\s/g, '')}`}
+              className="hidden md:flex items-center gap-1 text-sm font-medium text-mtex-lightblue hover:text-white transition-colors mr-2"
+            >
+              <Phone className="w-4 h-4" />
               {COMPANY_PHONE}
             </a>
-            {profile?.role === 'admin' && (
-              <Link to="/admin" className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-mtex-lightblue hover:underline">Админ</Link>
+
+            {profile ? (
+              <div className="flex items-center gap-2">
+                {profile.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-mtex-lightblue hover:underline"
+                  >
+                    Админ
+                  </Link>
+                )}
+                <span className="hidden md:inline text-sm text-zinc-300 max-w-[120px] truncate">
+                  {profile.full_name || profile.email}
+                </span>
+                <button
+                  onClick={onLogout}
+                  aria-label="Изход"
+                  className="text-xs text-zinc-400 hover:text-mtex-red px-2 py-1 rounded-md hover:bg-zinc-900 transition-colors"
+                >
+                  Изход
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onAuthClick}
+                aria-label="Профил"
+                className="w-11 h-11 flex items-center justify-center text-zinc-200 hover:text-mtex-lightblue hover:bg-zinc-900 rounded-md transition-colors"
+              >
+                <User className="w-5 h-5" />
+              </button>
             )}
-            <button onClick={onAuthClick} aria-label="Профил" className="w-11 h-11 flex items-center justify-center text-zinc-200 hover:text-mtex-lightblue hover:bg-zinc-900 rounded-md transition-colors">
-              <User className="w-5 h-5" />
-            </button>
-            <button onClick={onCartClick} aria-label="Количка" className="relative w-11 h-11 flex items-center justify-center text-zinc-200 hover:text-mtex-lightblue hover:bg-zinc-900 rounded-md transition-colors">
+
+            <button
+              onClick={onCartClick}
+              aria-label="Количка"
+              className="w-11 h-11 flex items-center justify-center text-zinc-200 hover:text-mtex-lightblue hover:bg-zinc-900 rounded-md transition-colors"
+            >
               <ShoppingCart className="w-5 h-5" />
-              {count > 0 && <span className="absolute -top-1 -right-1 bg-mtex-red text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{count}</span>}
             </button>
-            <button onClick={() => setOpen((v) => !v)} aria-label="Меню" className="lg:hidden w-11 h-11 flex items-center justify-center text-white hover:bg-zinc-900 rounded-md">
-              {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Меню"
+              className="lg:hidden w-11 h-11 flex items-center justify-center text-zinc-200 hover:text-mtex-lightblue hover:bg-zinc-900 rounded-md transition-colors"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
       </div>
 
-      {open && (
-        <div className="lg:hidden bg-black/98 border-t border-zinc-800 fade-up">
-          <nav className="px-4 py-3 flex flex-col">
-            {NAV_LINKS.map((l) => (
-              <Link key={l.href} to={l.href} className="py-3 px-2 text-base font-medium text-zinc-200 hover:text-mtex-lightblue border-b border-zinc-900">{l.label}</Link>
-            ))}
-            <a href={`tel:${COMPANY_PHONE.replace(/\s/g, '')}`} className="mt-3 flex items-center gap-2 text-base font-semibold text-white">
-              <Phone className="w-5 h-5 text-mtex-red" />{COMPANY_PHONE}
-            </a>
-            {profile?.role === 'admin' && <Link to="/admin" className="mt-2 text-sm font-semibold text-mtex-lightblue">Админ панел</Link>}
-          </nav>
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="lg:hidden bg-zinc-950 border-t border-zinc-800 px-4 py-4 space-y-2">
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-sm font-medium text-zinc-300 hover:text-mtex-lightblue"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <a
+            href={`tel:${COMPANY_PHONE.replace(/\s/g, '')}`}
+            className="block py-2 text-sm font-medium text-mtex-lightblue"
+          >
+            {COMPANY_PHONE}
+          </a>
+          {profile?.role === 'admin' && (
+            <Link
+              to="/admin"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-sm font-semibold text-mtex-lightblue"
+            >
+              Админ панел
+            </Link>
+          )}
+          {profile && (
+            <button
+              onClick={() => { onLogout(); setMobileOpen(false); }}
+              className="block py-2 text-sm font-semibold text-zinc-400 hover:text-mtex-red"
+            >
+              Изход
+            </button>
+          )}
         </div>
       )}
     </header>
