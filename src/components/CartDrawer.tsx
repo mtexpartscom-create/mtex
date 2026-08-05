@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { X, Trash2, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { X, Trash2, ShoppingCart, CheckCircle2, Package } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
@@ -12,7 +13,7 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
-  const { items, total, remove, setQty, clear } = useCart();
+  const { items, productItems, total, remove, setQty, clear } = useCart();
   const { profile, session } = useAuth();
   const [cities, setCities] = useState<EcontCity[]>([]);
   const [offices, setOffices] = useState<EcontOffice[]>([]);
@@ -40,7 +41,29 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     });
   }, [cityId]);
 
-  const discountedTotal = items.reduce((s, i) => s + i.quantity * applyDiscount(Number(i.part.price), profile), 0);
+  const allItems = [
+    ...items.map((i) => ({
+      id: i.part.id,
+      name: i.part.title,
+      price: applyDiscount(Number(i.part.price), profile),
+      quantity: i.quantity,
+      image: i.part.image_url,
+      stock: 99,
+      isProduct: false,
+    })),
+    ...productItems.map((i) => ({
+      id: i.product.id,
+      name: i.product.name,
+      price: applyDiscount(Number(i.product.price), profile),
+      quantity: i.quantity,
+      image: i.product.images[0] ?? null,
+      stock: i.product.stock,
+      isProduct: true,
+    })),
+  ];
+
+  const discountedTotal = allItems.reduce((s, i) => s + i.quantity * i.price, 0);
+  const totalCount = allItems.length;
 
   async function submitOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -59,13 +82,22 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
     if (orderErr || !orderData) { setStatus('err'); return; }
 
-    const orderItems = items.map((i) => ({
-      order_id: orderData.id,
-      part_id: i.part.id,
-      title: i.part.title,
-      price: applyDiscount(Number(i.part.price), profile),
-      quantity: i.quantity,
-    }));
+    const orderItems = [
+      ...items.map((i) => ({
+        order_id: orderData.id,
+        part_id: i.part.id,
+        title: i.part.title,
+        price: applyDiscount(Number(i.part.price), profile),
+        quantity: i.quantity,
+      })),
+      ...productItems.map((i) => ({
+        order_id: orderData.id,
+        part_id: i.product.id,
+        title: i.product.name,
+        price: applyDiscount(Number(i.product.price), profile),
+        quantity: i.quantity,
+      })),
+    ];
     const { error: itemsErr } = await supabase.from('order_items').insert(orderItems);
     if (itemsErr) { setStatus('err'); return; }
 
@@ -101,9 +133,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <p className="text-zinc-400 mt-2">Ще се свържем с вас за потвърждение.</p>
             <button onClick={onClose} className="btn-red mt-6">Затвори</button>
           </div>
-        ) : items.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center p-8 text-center text-zinc-400">
-            <p>Количката е празна.</p>
+        ) : totalCount === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <Package className="w-12 h-12 text-zinc-600 mb-3" />
+            <p className="text-zinc-400 mb-4">Количката е празна.</p>
+            <Link to="/avto-chasti" onClick={onClose} className="btn-red text-sm">Разгледай части</Link>
           </div>
         ) : step === 'cart' ? (
           <>
@@ -111,28 +145,29 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               {hasDiscount && (
                 <p className="text-xs text-emerald-400 font-semibold text-center">Активна B2B отстъпка {Math.round(B2B_DISCOUNT * 100)}%</p>
               )}
-              {items.map((i) => {
-                const unit = applyDiscount(Number(i.part.price), profile);
-                return (
-                  <div key={i.part.id} className="flex gap-3 bg-zinc-900 rounded-lg p-3">
-                    <div className="w-16 h-16 rounded-md overflow-hidden bg-zinc-800 shrink-0">
-                      {i.part.image_url && <img src={i.part.image_url} alt={i.part.title} className="w-full h-full object-cover" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white line-clamp-2">{i.part.title}</p>
-                      <p className="text-sm text-mtex-lightblue mt-0.5">{formatBgn(unit)}</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <button onClick={() => setQty(i.part.id, i.quantity - 1)} className="w-8 h-8 rounded bg-zinc-800 text-white">-</button>
-                        <span className="text-sm text-white w-6 text-center">{i.quantity}</span>
-                        <button onClick={() => setQty(i.part.id, i.quantity + 1)} className="w-8 h-8 rounded bg-zinc-800 text-white">+</button>
-                        <button onClick={() => remove(i.part.id)} className="ml-auto text-zinc-500 hover:text-red-500" aria-label="Премахни">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+              {allItems.map((i) => (
+                <div key={i.id} className="flex gap-3 bg-zinc-900 rounded-lg p-3">
+                  <div className="w-16 h-16 rounded-md overflow-hidden bg-zinc-800 shrink-0">
+                    {i.image ? (
+                      <img src={i.image} alt={i.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-zinc-600" /></div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white line-clamp-2">{i.name}</p>
+                    <p className="text-sm text-mtex-lightblue mt-0.5">{i.isProduct ? `${i.price.toFixed(2)} €` : formatBgn(i.price)}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <button onClick={() => setQty(i.id, i.quantity - 1)} className="w-8 h-8 rounded bg-zinc-800 text-white">-</button>
+                      <span className="text-sm text-white w-6 text-center">{i.quantity}</span>
+                      <button onClick={() => setQty(i.id, Math.min(i.quantity + 1, i.stock || 99))} className="w-8 h-8 rounded bg-zinc-800 text-white">+</button>
+                      <button onClick={() => remove(i.id)} className="ml-auto text-zinc-500 hover:text-red-500" aria-label="Премахни">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
             <footer className="p-5 border-t border-zinc-800 space-y-3">
               <div className="flex justify-between text-lg font-bold text-white">
