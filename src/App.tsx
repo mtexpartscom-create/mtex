@@ -8,6 +8,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { LandingPage } from '@/pages/LandingPage';
 import { AvtomorgaPage } from '@/pages/AvtomorgaPage';
 import { AvtoChastiPage } from '@/pages/AvtoChastiPage';
+import { PartDetailPage } from '@/pages/PartDetailPage';
 import { AvtoservisPage } from '@/pages/AvtoservisPage';
 import { AvtoklimaticiPage } from '@/pages/AvtoklimaticiPage';
 import { ProdaiAvtomobilPage } from '@/pages/ProdaiAvtomobilPage';
@@ -27,6 +28,7 @@ function AppInner() {
           <Route path="/avtomorga" element={<AvtomorgaPage />} />
           <Route path="/avto-chasti" element={<AvtoChastiPage />} />
           <Route path="/avtochasti" element={<AvtoChastiPage />} />
+          <Route path="/parts/:id" element={<PartDetailPage />} />
           <Route path="/avtoservis" element={<AvtoservisPage />} />
           <Route path="/avtoklimatici" element={<AvtoklimaticiPage />} />
           <Route path="/prodai-avtomobil" element={<ProdaiAvtomobilPage />} />

@@ -132,6 +132,7 @@ export interface MorgueCar {
 }
 
 export type PartType = 'original' | 'universal' | 'both';
+export type PartCondition = 'new' | 'used';
 
 export interface PartsProduct {
   id: string;
@@ -143,6 +144,23 @@ export interface PartsProduct {
   price: number;
   is_published: boolean;
   created_at: string;
+  brand: string | null;
+  part_number: string | null;
+  stock: number;
+  condition: PartCondition;
+  make: string | null;
+  model: string | null;
+  year_from: number | null;
+  year_to: number | null;
+  engine_type: string | null;
+  specs: Record<string, string> | null;
+  oem_number: string | null;
+  aftermarket_numbers: string | null;
+}
+
+export interface CartItemProduct {
+  product: PartsProduct;
+  quantity: number;
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
