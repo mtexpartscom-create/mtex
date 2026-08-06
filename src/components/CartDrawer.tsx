@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Trash2, ShoppingCart, CheckCircle2, Package } from 'lucide-react';
+import { X, Trash2, ShoppingCart, CheckCircle2, Package, MapPin, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/auth';
@@ -11,6 +11,8 @@ interface CartDrawerProps {
   open: boolean;
   onClose: () => void;
 }
+
+type DeliveryMode = 'econt' | 'manual';
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, productItems, total, remove, setQty, clear } = useCart();
@@ -24,6 +26,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [gdpr, setGdpr] = useState(false);
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
   const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'err'>('idle');
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('econt');
+  const [manualCity, setManualCity] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
 
   const hasDiscount = b2bDiscountActive(profile);
 
@@ -68,14 +73,26 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   async function submitOrder(e: React.FormEvent) {
     e.preventDefault();
     setStatus('sending');
-    const city = cities.find((c) => c.id === cityId);
-    const office = offices.find((o) => o.id === officeId);
+
+    let cityValue = '';
+    let officeValue = '';
+
+    if (deliveryMode === 'econt') {
+      const city = cities.find((c) => c.id === cityId);
+      const office = offices.find((o) => o.id === officeId);
+      cityValue = city?.name ?? '';
+      officeValue = office ? `${office.name}${office.address ? ` - ${office.address}` : ''}` : '';
+    } else {
+      cityValue = manualCity;
+      officeValue = manualAddress;
+    }
+
     const { data: orderData, error: orderErr } = await supabase.from('orders').insert({
       user_id: session?.user.id ?? null,
       customer_name: name,
       phone,
-      city: city?.name ?? '',
-      ekont_office: office ? `${office.name}${office.address ? ` - ${office.address}` : ''}` : '',
+      city: cityValue,
+      ekont_office: officeValue,
       total: discountedTotal,
       status: 'new',
     }).select().single();
@@ -105,6 +122,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     clear();
     setStep('cart');
     setCityId(''); setOfficeId(''); setName(''); setPhone(''); setGdpr(false);
+    setManualCity(''); setManualAddress('');
   }
 
   if (!open) return null;
@@ -179,22 +197,67 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           </>
         ) : (
           <form onSubmit={submitOrder} className="flex-1 overflow-y-auto p-4 space-y-3">
-            <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Име и Фамилия" className="input-dark" />
-            <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Телефон" className="input-dark" />
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">Изберете град</label>
-              <select required value={cityId} onChange={(e) => setCityId(e.target.value)} className="input-dark">
-                <option value="">— Изберете град —</option>
-                {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <label className="block text-sm text-zinc-400 mb-1">Име и фамилия</label>
+              <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван Иванов" className="input-dark" />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">Изберете офис на Еконт</label>
-              <select required value={officeId} onChange={(e) => setOfficeId(e.target.value)} className="input-dark" disabled={!cityId}>
-                <option value="">— Изберете офис —</option>
-                {offices.map((o) => <option key={o.id} value={o.id}>{o.name}{o.address ? ` - ${o.address}` : ''}</option>)}
-              </select>
+              <label className="block text-sm text-zinc-400 mb-1">Телефонен номер</label>
+              <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0888 123 456" className="input-dark" />
             </div>
+
+            <div>
+              <label className="block text-sm text-zinc-400 mb-2">Начин на доставка</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMode('econt')}
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${deliveryMode === 'econt' ? 'bg-mtex-darkblue/30 border-mtex-lightblue text-mtex-lightblue' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'}`}
+                >
+                  <Truck className="w-4 h-4" />
+                  Офис Еконт
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMode('manual')}
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${deliveryMode === 'manual' ? 'bg-mtex-darkblue/30 border-mtex-lightblue text-mtex-lightblue' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'}`}
+                >
+                  <MapPin className="w-4 h-4" />
+                  Адрес (ръчно)
+                </button>
+              </div>
+            </div>
+
+            {deliveryMode === 'econt' ? (
+              <>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Изберете град</label>
+                  <select required value={cityId} onChange={(e) => setCityId(e.target.value)} className="input-dark">
+                    <option value="">— Изберете град —</option>
+                    {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Изберете офис на Еконт</label>
+                  <select required value={officeId} onChange={(e) => setOfficeId(e.target.value)} className="input-dark" disabled={!cityId}>
+                    <option value="">— Изберете офис —</option>
+                    {offices.map((o) => <option key={o.id} value={o.id}>{o.name}{o.address ? ` - ${o.address}` : ''}</option>)}
+                  </select>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Град</label>
+                  <input required value={manualCity} onChange={(e) => setManualCity(e.target.value)} placeholder="напр. София" className="input-dark" />
+                </div>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Адрес за доставка</label>
+                  <textarea required value={manualAddress} onChange={(e) => setManualAddress(e.target.value)} placeholder="ул. Примерна № 5, ет. 3, ап. 12" rows={3} className="input-dark resize-none" />
+                </div>
+              </>
+            )}
+
             <label className="flex items-start gap-2 text-sm text-zinc-300">
               <input type="checkbox" required checked={gdpr} onChange={(e) => setGdpr(e.target.checked)} className="mt-1 w-5 h-5 accent-mtex-red" />
               <span>Съгласен съм с обработката на лични данни съгласно GDPR.</span>
